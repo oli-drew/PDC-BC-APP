@@ -257,7 +257,7 @@ XmlPort 50045 "PDC Export Purch. Order F010"
                     country := Header."Ship-to Country/Region Code";
                     delivery_service_code := '';
                     contact_name := Header."Ship-to Contact";
-                    contact_phone := '';
+                    contact_phone := Header."Ship-to Phone No.";
                     contact_email := 'purchasing@peterdrew.com';
                     pdf_file_name := '';
                 end;

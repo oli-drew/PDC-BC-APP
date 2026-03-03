@@ -1,10 +1,6 @@
 {
 	"folders": [
 		{
-			"name": ".alpackages",
-			"path": ".alpackages"
-		},
-		{
 			"name": "AL",
 			"path": "AL"
 		},
