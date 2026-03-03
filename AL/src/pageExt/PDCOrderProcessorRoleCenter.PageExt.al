@@ -111,6 +111,41 @@ pageextension 50068 PDCOrderProcessorRoleCenter extends "Order Processor Role Ce
                         ApplicationArea = All;
                         RunObject = page "PDC Nav Portal Roles";
                     }
+                    action("PDC Customer Staff Sync")
+                    {
+                        Caption = 'Customer Staff Sync';
+                        ToolTip = 'Configure and monitor staff imports from Azure Blob Storage';
+                        ApplicationArea = All;
+                        RunObject = page "PDC Blob Staff Imp. Setup List";
+                    }
+                }
+            }
+            group("PDC Carbonfact")
+            {
+                Caption = 'Carbonfact';
+                action("PDC CF Export Product Data")
+                {
+                    Caption = 'Export Product Data';
+                    ToolTip = 'Export Carbonfact product data (Products, Packaging, BOM) as a 3-sheet Excel file.';
+                    Image = ExportFile;
+                    ApplicationArea = All;
+                    RunObject = report "PDC CF Product Data Export";
+                }
+                action("PDC CF Export Purchase Orders")
+                {
+                    Caption = 'Export Purchase Orders';
+                    ToolTip = 'Export Carbonfact purchase order data as an Excel file.';
+                    Image = ExportFile;
+                    ApplicationArea = All;
+                    RunObject = report "PDC CF Purchase Export";
+                }
+                action("PDC CF Import CO2e")
+                {
+                    Caption = 'Import CO2e';
+                    ToolTip = 'Import Carbonfact CO2e values from CSV and optionally propagate to production items.';
+                    Image = ImportExcel;
+                    ApplicationArea = All;
+                    RunObject = report "PDC CF Import CO2e";
                 }
             }
         }

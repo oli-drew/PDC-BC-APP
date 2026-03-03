@@ -2,7 +2,7 @@
   "id": "948f1a56-572b-4a9e-a7aa-cc6b2de5bfe9",
   "name": "PDC",
   "publisher": "JEMEL SIA",
-  "version": "26.0.0.62",
+  "version": "26.0.0.86",
   "brief": "PDC",
   "description": "PDC",
   "privacyStatement": "",  
@@ -39,6 +39,13 @@
     "allowDownloadingSource": true,
     "includeSourceInSymbolFile": false
   },
+  "internalsVisibleTo": [
+    {
+      "id": "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d",
+      "name": "PDC Tests",
+      "publisher": "JEMEL SIA"
+    }
+  ],
   "target": "Cloud",
   "runtime": "15.2",
   "resourceFolders": ["Resources"]

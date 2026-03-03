@@ -9,6 +9,20 @@ tableextension 50000 PDCCountryRegion extends "Country/Region"
         {
             Caption = 'Available in Portal';
         }
+        field(50010; "PDC CF Truck Km"; Integer)
+        {
+            Caption = 'CF Truck Km';
+            ToolTip = 'Specifies the truck transport distance in kilometres from this country to the UK warehouse for Carbonfact.';
+            DataClassification = CustomerContent;
+            MinValue = 0;
+        }
+        field(50011; "PDC CF Ship Km"; Integer)
+        {
+            Caption = 'CF Ship Km';
+            ToolTip = 'Specifies the ship transport distance in kilometres from this country to the UK warehouse for Carbonfact.';
+            DataClassification = CustomerContent;
+            MinValue = 0;
+        }
     }
 }
 

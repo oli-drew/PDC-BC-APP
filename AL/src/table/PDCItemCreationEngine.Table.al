@@ -185,6 +185,27 @@ table 50033 "PDC Item Creation Engine"
             Caption = 'Consuming Brand 6 Item No.';
             TableRelation = Item;
         }
+        field(38; "Net Weight"; Decimal)
+        {
+            Caption = 'Net Weight';
+            ToolTip = 'Specifies the net weight in kilograms of the item to be created.';
+            DataClassification = CustomerContent;
+            DecimalPlaces = 0 : 5;
+            MinValue = 0;
+        }
+        field(39; GTIN; Code[14])
+        {
+            Caption = 'GTIN';
+            ToolTip = 'Specifies the Global Trade Item Number (GTIN) for the item to be created.';
+            DataClassification = CustomerContent;
+        }
+        field(40; "Tariff No."; Code[20])
+        {
+            Caption = 'Tariff No.';
+            ToolTip = 'Specifies the tariff number for the item to be created.';
+            DataClassification = CustomerContent;
+            TableRelation = "Tariff Number";
+        }
     }
 
     keys
@@ -200,6 +221,15 @@ table 50033 "PDC Item Creation Engine"
 
     var
         Item: Record Item;
+
+    trigger OnDelete()
+    var
+        ItemCreationAttr: Record "PDC Item Creation Attribute";
+    begin
+        ItemCreationAttr.SetRange("Journal Batch Name", "Journal Batch Name");
+        ItemCreationAttr.SetRange("Item No.", "Item No.");
+        ItemCreationAttr.DeleteAll();
+    end;
 
     procedure Margin(): Decimal
     begin

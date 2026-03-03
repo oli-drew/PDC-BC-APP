@@ -47,18 +47,18 @@ tableextension 50045 PDCSalesPrice extends "Sales Price"
         }
         field(50004; "PDC Direct Unit Cost"; Decimal)
         {
-            Caption = 'Direct Unit Cost';
+            Caption = 'Direct Unit Cost (LCY)';
             FieldClass = Normal;
             Editable = false;
         }
         field(50005; "PDC Gross"; Decimal)
         {
-            Caption = 'Gross';
+            Caption = 'Gross (LCY)';
             Editable = false;
         }
         field(50006; PDCMargin; Decimal)
         {
-            Caption = 'Margin';
+            Caption = 'Margin (%)';
             Editable = false;
         }
         field(50007; "PDC Item Blocked"; Boolean)
@@ -94,7 +94,9 @@ tableextension 50045 PDCSalesPrice extends "Sales Price"
         TempItem: Record Item temporary;
         ProdBom: Record "Production BOM Header";
         WorksheetName: Record "Standard Cost Worksheet Name";
+        CurrencyExchangeRate: Record "Currency Exchange Rate";
         CalcStdCost: Codeunit "Calculate Standard Cost";
+        UnitPriceLCY: Decimal;
     begin
         Item.GET("Item No.");
         if Item."Replenishment System" = Item."Replenishment System"::Purchase then begin
@@ -103,6 +105,8 @@ tableextension 50045 PDCSalesPrice extends "Sales Price"
             PurchPrice.setrange("Vendor No.", "PDC Vendor No.");
             if PurchPrice.findlast() then begin
                 "PDC Direct Unit Cost" := PurchPrice."Direct Unit Cost";
+                if PurchPrice."Currency Code" <> '' then
+                    "PDC Direct Unit Cost" := CurrencyExchangeRate.ExchangeAmount("PDC Direct Unit Cost", PurchPrice."Currency Code", '', "Starting Date");
                 "PDC Direct Unit CostStart.Date" := PurchPrice."Starting Date";
             end;
         end
@@ -126,14 +130,25 @@ tableextension 50045 PDCSalesPrice extends "Sales Price"
                     if TempItem.findfirst() then
                         "PDC Direct Unit Cost" := TempItem."Standard Cost";
                 end;
-        if "PDC Direct Unit Cost" <> 0 then
-            "PDC Gross" := "Unit Price" - "PDC Direct Unit Cost"
-        else
+        if "Unit Price" <> 0 then begin
+            if "Currency Code" <> '' then
+                UnitPriceLCY := CurrencyExchangeRate.ExchangeAmount("Unit Price", "Currency Code", '', "Starting Date")
+            else
+                UnitPriceLCY := "Unit Price";
+
+            if "PDC Direct Unit Cost" <> 0 then
+                "PDC Gross" := UnitPriceLCY - "PDC Direct Unit Cost"
+            else
+                "PDC Gross" := 0;
+            if UnitPriceLCY <> 0 then
+                PDCMargin := round("PDC Gross" / UnitPriceLCY * 100, 0.0001)
+            else
+                PDCMargin := 0;
+        end
+        else begin
             "PDC Gross" := 0;
-        if "Unit Price" <> 0 then
-            PDCMargin := round("PDC Gross" / "Unit Price" * 100, 0.0001)
-        else
             PDCMargin := 0;
+        end;
         if Modify() then;
     end;
 }

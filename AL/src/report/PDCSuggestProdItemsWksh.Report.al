@@ -75,6 +75,10 @@ Report 50058 "PDC Suggest Prod. Items Wksh."
                                 Item.setrange("PDC fit", Worksheet.Fit);
                                 if Item.FindFirst() then begin
                                     Worksheet."Consuming Garmet Item No." := Item."No.";
+                                    Worksheet."Net Weight" := Item."Net Weight";
+                                    Worksheet.GTIN := Item.GTIN;
+                                    Worksheet."Tariff No." := Item."Tariff No.";
+                                    CopyItemAttributes(Item."No.", ToBatchName, Worksheet."Item No.");
 
                                     if AddUnitPrice <> 0 then begin
                                         SalesPrice.FindSalesPrice(TempSalesPrice, '', '', '', '', Item."No.", '', Item."Base Unit of Measure", '', WorkDate(), false);
@@ -386,6 +390,25 @@ Report 50058 "PDC Suggest Prod. Items Wksh."
     procedure Initialize(ToBatchName2: Code[10])
     begin
         ToBatchName := ToBatchName2;
+    end;
+
+    local procedure CopyItemAttributes(SourceItemNo: Code[20]; TargetBatchName: Code[10]; TargetItemNo: Code[20])
+    var
+        SourceMapping: Record "Item Attribute Value Mapping";
+        CreationAttr: Record "PDC Item Creation Attribute";
+    begin
+        SourceMapping.SetRange("Table ID", Database::Item);
+        SourceMapping.SetRange("No.", SourceItemNo);
+        if SourceMapping.FindSet() then
+            repeat
+                CreationAttr.Init();
+                CreationAttr."Journal Batch Name" := TargetBatchName;
+                CreationAttr."Item No." := TargetItemNo;
+                CreationAttr."Item Attribute ID" := SourceMapping."Item Attribute ID";
+                CreationAttr."Item Attribute Value ID" := SourceMapping."Item Attribute Value ID";
+                if not CreationAttr.Insert() then
+                    CreationAttr.Modify();
+            until SourceMapping.Next() = 0;
     end;
 }
 

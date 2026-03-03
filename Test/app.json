@@ -1,0 +1,32 @@
+{
+  "id": "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d",
+  "name": "PDC Tests",
+  "publisher": "JEMEL SIA",
+  "version": "26.0.0.1",
+  "brief": "PDC Test Suite",
+  "description": "Automated tests for PDC application",
+  "privacyStatement": "",
+  "EULA": "",
+  "help": "",
+  "url": "",
+  "logo": "",
+  "dependencies": [
+    {
+      "id": "948f1a56-572b-4a9e-a7aa-cc6b2de5bfe9",
+      "name": "PDC",
+      "publisher": "JEMEL SIA",
+      "version": "26.0.0.0"
+    }
+  ],
+  "screenshots": [],
+  "platform": "26.0.0.0",
+  "application": "26.0.0.0",
+  "idRanges": [
+    {
+      "from": 50500,
+      "to": 50599
+    }
+  ],
+  "target": "Cloud",
+  "runtime": "15.2"
+}

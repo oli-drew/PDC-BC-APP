@@ -201,6 +201,11 @@ pageextension 50005 PDCItemCard extends "Item Card"
                     ApplicationArea = All;
                     ToolTip = 'CarbonEmissionsCO2e';
                 }
+                field("PDC Carbonfact Enabled"; Rec."PDC Carbonfact Enabled")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies whether this item is included in Carbonfact exports for CO2 calculation.';
+                }
             }
         }
         addafter("Lead Time Calculation")

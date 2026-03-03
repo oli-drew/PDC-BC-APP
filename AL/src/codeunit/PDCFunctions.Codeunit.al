@@ -130,6 +130,8 @@ Codeunit 50001 "PDC Functions"
         PurchHeader: Record "Purchase Header";
         PurchRcptHeader: Record "Purch. Rcpt. Header";
         ProdOrder: Record "Production Order";
+        TempReceivedItems: Record Item temporary;
+        TempFirmPlannedBefore: Record "Production Order" temporary;
         TempReleasedProdOrders: Record "Production Order" temporary;
         TempUnreleasedProdOrders: Record "Production Order" temporary;
         ConfViewProdOrdersQst: Label 'Some Firm Planned Production Orders could not be released due to insufficient stock.\\Do you want to view the related production orders?';
@@ -139,33 +141,36 @@ Codeunit 50001 "PDC Functions"
     begin
         PurchHeader.COPY(FromPurchHeader);
 
-        // Step 1: Receive the Purchase Order and print PO labels (reuse existing function)
+        // Step 1: Collect items being received BEFORE posting
+        CollectItemsToReceive(PurchHeader, TempReceivedItems);
+
+        // Step 2: Find Firm Planned production orders that need these items BEFORE release
+        FindFirmPlannedOrdersForItems(TempReceivedItems, TempFirmPlannedBefore);
+
+        // Step 3: Receive the Purchase Order and print PO labels
         PurchPostReceiveToday(PurchHeader, Print);
 
-        // Step 2: Find the posted receipt
+        // Step 4: Find the posted receipt (to verify posting succeeded)
         PurchRcptHeader.SETCURRENTKEY("Order No.");
         PurchRcptHeader.SETRANGE("Order No.", PurchHeader."No.");
-        if not PurchRcptHeader.FINDLAST() then
-            exit; // No receipt found, exit
+        if PurchRcptHeader.IsEmpty() then
+            exit; // No receipt found, posting may have been cancelled
 
-        // Step 3: Find production orders related to this PO receipt
-        FindRelatedProductionOrders(PurchRcptHeader, TempReleasedProdOrders, TempUnreleasedProdOrders);
-
-        // Exit if no production orders are related to this PO
-        if TempReleasedProdOrders.IsEmpty() and TempUnreleasedProdOrders.IsEmpty() then
-            exit;
-
-        // Step 4: Reserve and Release Firm Planned production orders (all orders, not just this PO)
+        // Step 5: Reserve and Release Firm Planned production orders
         FirmProdOrderAutoReserve();
         FirmProdOrderAutoRelease();
 
-        // Step 5: Refresh status of production orders (some may have been released)
-        RefreshProductionOrderStatus(TempReleasedProdOrders, TempUnreleasedProdOrders);
+        // Step 6: Categorize tracked orders - check which were released vs still firm planned
+        CategorizeProductionOrders(TempFirmPlannedBefore, TempReleasedProdOrders, TempUnreleasedProdOrders);
 
-        // Step 6: Print production labels for released orders
+        // Exit if no production orders were related to received items
+        if TempReleasedProdOrders.IsEmpty() and TempUnreleasedProdOrders.IsEmpty() then
+            exit;
+
+        // Step 7: Print production labels for released orders
         PrintProductionLabelsForOrders(TempReleasedProdOrders);
 
-        // Step 7: Ask user if they want to view production orders
+        // Step 8: Ask user if they want to view production orders
         if not TempUnreleasedProdOrders.IsEmpty() then begin
             if CONFIRM(ConfViewProdOrdersQst, TRUE) then
                 ShowProdOrders := true;
@@ -175,9 +180,7 @@ Codeunit 50001 "PDC Functions"
                     ShowProdOrders := true;
 
         if ShowProdOrders then begin
-            // Build filter of all production orders (released and unreleased)
             ProdOrderFilter := BuildProductionOrderFilter(TempReleasedProdOrders, TempUnreleasedProdOrders);
-
             if ProdOrderFilter <> '' then begin
                 ProdOrder.SETFILTER("No.", ProdOrderFilter);
                 PAGE.RUNMODAL(PAGE::"Released Production Orders", ProdOrder);
@@ -185,95 +188,76 @@ Codeunit 50001 "PDC Functions"
         end;
     end;
 
-    local procedure FindRelatedProductionOrders(PurchRcptHeader: Record "Purch. Rcpt. Header"; var TempReleasedOrders: Record "Production Order" temporary; var TempUnreleasedOrders: Record "Production Order" temporary)
+    local procedure CollectItemsToReceive(PurchHeader: Record "Purchase Header"; var TempItems: Record Item temporary)
     var
-        PurchRcptLine: Record "Purch. Rcpt. Line";
-        ItemLedgEntry: Record "Item Ledger Entry";
-        ReservEntry: Record "Reservation Entry";
+        PurchLine: Record "Purchase Line";
+        Item: Record Item;
+    begin
+        TempItems.DELETEALL();
+        PurchLine.SETRANGE("Document Type", PurchHeader."Document Type");
+        PurchLine.SETRANGE("Document No.", PurchHeader."No.");
+        PurchLine.SETRANGE(Type, PurchLine.Type::Item);
+        PurchLine.SETFILTER("No.", '<>%1', '');
+        PurchLine.SETFILTER("Qty. to Receive", '<>%1', 0);
+        if PurchLine.FINDSET() then
+            repeat
+                if not TempItems.GET(PurchLine."No.") then
+                    if Item.GET(PurchLine."No.") then begin
+                        TempItems := Item;
+                        TempItems.INSERT();
+                    end;
+            until PurchLine.NEXT() = 0;
+    end;
+
+    local procedure FindFirmPlannedOrdersForItems(var TempItems: Record Item temporary; var TempFirmPlannedOrders: Record "Production Order" temporary)
+    var
         ProdOrderComp: Record "Prod. Order Component";
         ProdOrder: Record "Production Order";
-        TempProdOrderNos: Record "Production Order" temporary;
     begin
-        // Find all production orders that have components reserved from this receipt
-        PurchRcptLine.SETRANGE("Document No.", PurchRcptHeader."No.");
-        PurchRcptLine.SETRANGE(Type, PurchRcptLine.Type::Item);
-        PurchRcptLine.SETFILTER("No.", '<>%1', '');
-        PurchRcptLine.SETFILTER(Quantity, '<>%1', 0);
-        if not PurchRcptLine.FINDSET() then
+        TempFirmPlannedOrders.DELETEALL();
+        if not TempItems.FINDSET() then
             exit;
 
         repeat
-            // Find item ledger entries for this receipt line
-            ItemLedgEntry.RESET();
-            ItemLedgEntry.SETCURRENTKEY("Document No.", "Document Type", "Document Line No.");
-            ItemLedgEntry.SETRANGE("Document No.", PurchRcptLine."Document No.");
-            ItemLedgEntry.SETRANGE("Document Type", ItemLedgEntry."Document Type"::"Purchase Receipt");
-            ItemLedgEntry.SETRANGE("Document Line No.", PurchRcptLine."Line No.");
-            if ItemLedgEntry.FINDSET() then
+            ProdOrderComp.RESET();
+            ProdOrderComp.SETRANGE(Status, ProdOrderComp.Status::"Firm Planned");
+            ProdOrderComp.SETRANGE("Item No.", TempItems."No.");
+            ProdOrderComp.SETFILTER("Remaining Qty. (Base)", '<>%1', 0);
+            if ProdOrderComp.FINDSET() then
                 repeat
-                    // Find reservations from this item ledger entry to production order components
-                    ReservEntry.RESET();
-                    ReservEntry.SETCURRENTKEY("Item Ledger Entry No.");
-                    ReservEntry.SETRANGE("Item Ledger Entry No.", ItemLedgEntry."Entry No.");
-                    ReservEntry.SETRANGE("Source Type", DATABASE::"Prod. Order Component");
-                    ReservEntry.SETFILTER("Quantity (Base)", '<>%1', 0);
-                    if ReservEntry.FINDSET() then
-                        repeat
-                            // Get the production order component
-                            if ProdOrderComp.GET(
-                                ReservEntry."Source Subtype",
-                                ReservEntry."Source ID",
-                                ReservEntry."Source Prod. Order Line",
-                                ReservEntry."Source Ref. No.")
-                            then begin
-                                // Check if we've already added this production order
-                                TempProdOrderNos.RESET();
-                                TempProdOrderNos.SETRANGE(Status, ProdOrderComp.Status);
-                                TempProdOrderNos.SETRANGE("No.", ProdOrderComp."Prod. Order No.");
-                                if TempProdOrderNos.IsEmpty() then begin
-                                    // Track this production order
-                                    TempProdOrderNos.INIT();
-                                    TempProdOrderNos.Status := ProdOrderComp.Status;
-                                    TempProdOrderNos."No." := ProdOrderComp."Prod. Order No.";
-                                    TempProdOrderNos.INSERT();
-
-                                    // Add to appropriate list based on status
-                                    if ProdOrder.GET(ProdOrderComp.Status, ProdOrderComp."Prod. Order No.") then
-                                        if ProdOrder.Status = ProdOrder.Status::"Firm Planned" then begin
-                                            TempUnreleasedOrders := ProdOrder;
-                                            if not TempUnreleasedOrders.INSERT() then
-                                                TempUnreleasedOrders.MODIFY();
-                                        end else
-                                            if ProdOrder.Status = ProdOrder.Status::Released then begin
-                                                TempReleasedOrders := ProdOrder;
-                                                if not TempReleasedOrders.INSERT() then
-                                                    TempReleasedOrders.MODIFY();
-                                            end;
-                                end;
-                            end;
-                        until ReservEntry.NEXT() = 0;
-                until ItemLedgEntry.NEXT() = 0;
-        until PurchRcptLine.NEXT() = 0;
+                    TempFirmPlannedOrders.SETRANGE("No.", ProdOrderComp."Prod. Order No.");
+                    if TempFirmPlannedOrders.IsEmpty() then
+                        if ProdOrder.GET(ProdOrder.Status::"Firm Planned", ProdOrderComp."Prod. Order No.") then begin
+                            TempFirmPlannedOrders := ProdOrder;
+                            TempFirmPlannedOrders.INSERT();
+                        end;
+                    TempFirmPlannedOrders.RESET();
+                until ProdOrderComp.NEXT() = 0;
+        until TempItems.NEXT() = 0;
     end;
 
-    local procedure RefreshProductionOrderStatus(var TempReleasedOrders: Record "Production Order" temporary; var TempUnreleasedOrders: Record "Production Order" temporary)
+    local procedure CategorizeProductionOrders(var TempFirmPlannedBefore: Record "Production Order" temporary; var TempReleasedOrders: Record "Production Order" temporary; var TempUnreleasedOrders: Record "Production Order" temporary)
     var
         ProdOrder: Record "Production Order";
-        ProdOrderNo: Code[20];
     begin
-        // Check if any unreleased orders have been released
-        if TempUnreleasedOrders.FINDSET() then
-            repeat
-                ProdOrderNo := TempUnreleasedOrders."No.";
-                // Try to find as released
-                if ProdOrder.GET(ProdOrder.Status::Released, ProdOrderNo) then begin
-                    // Move from unreleased to released
-                    TempReleasedOrders := ProdOrder;
-                    if not TempReleasedOrders.INSERT() then
-                        TempReleasedOrders.MODIFY();
-                    TempUnreleasedOrders.DELETE();
+        TempReleasedOrders.DELETEALL();
+        TempUnreleasedOrders.DELETEALL();
+
+        if not TempFirmPlannedBefore.FINDSET() then
+            exit;
+
+        repeat
+            // Check if the order was released (now exists as Released with same No.)
+            if ProdOrder.GET(ProdOrder.Status::Released, TempFirmPlannedBefore."No.") then begin
+                TempReleasedOrders := ProdOrder;
+                TempReleasedOrders.INSERT();
+            end else
+                // Still Firm Planned
+                if ProdOrder.GET(ProdOrder.Status::"Firm Planned", TempFirmPlannedBefore."No.") then begin
+                    TempUnreleasedOrders := ProdOrder;
+                    TempUnreleasedOrders.INSERT();
                 end;
-            until TempUnreleasedOrders.NEXT() = 0;
+        until TempFirmPlannedBefore.NEXT() = 0;
     end;
 
     local procedure PrintProductionLabelsForOrders(var TempProdOrders: Record "Production Order" temporary)
@@ -356,7 +340,16 @@ Codeunit 50001 "PDC Functions"
         DraftOrderHeader.GET(DraftOrderItemLine."Document No.");
         Customer.GET(DraftOrderHeader."Sell-to Customer No.");
         Item.GET(DraftOrderItemLine."Item No.");
-        SalesPriceMgt.FindSalesPrice(TempSalesPrice, DraftOrderHeader."Sell-to Customer No.", '', Customer."Customer Price Group", '', DraftOrderItemLine."Item No.", '', DraftOrderItemLine."Unit Of Measure Code", '', WORKDATE, TRUE);
+        SalesPriceMgt.FindSalesPrice(TempSalesPrice,
+                                    DraftOrderHeader."Sell-to Customer No.",
+                                    '',
+                                    Customer."Customer Price Group",
+                                    '',
+                                    DraftOrderItemLine."Item No.",
+                                    '',
+                                    DraftOrderItemLine."Unit Of Measure Code",
+                                    '',
+                                    DT2DATE(DraftOrderHeader."Created Date"), TRUE);
         SalesPriceMgt.CalcBestUnitPrice(TempSalesPrice);
         DraftOrderItemLine."Unit Price" := TempSalesPrice."Unit Price";
     end;

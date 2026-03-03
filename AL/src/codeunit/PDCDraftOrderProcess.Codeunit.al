@@ -68,6 +68,8 @@ codeunit 50004 "PDC Draft Order Process"
                 SalesHeader.Validate("Ship-to Code", Rec."Ship-to Code");
                 SalesHeader.Validate("Shipping Agent Code", ShippingAgentServices."Shipping Agent Code");
                 SalesHeader.Validate("Shipping Agent Service Code", ShippingAgentServices.Code);
+                if NavPortalUser."Contact No." <> '' then
+                    SalesHeader.Validate("Sell-to Contact No.", NavPortalUser."Contact No.");
                 SalesHeader."Requested Delivery Date" := DraftOrderItemLine."Requested Shipment Date";
                 SalesHeader."Your Reference" := Rec."PO No.";
 
@@ -105,6 +107,7 @@ codeunit 50004 "PDC Draft Order Process"
                     SalesLine.Validate(Type, SalesLine.Type::Item);
                     SalesLine.Validate("No.", DraftOrderItemLine."Item No.");
                     SalesLine.Validate(Quantity, DraftOrderItemLine.Quantity);
+                    SalesLine.Validate("Unit Price", DraftOrderItemLine."Unit Price");
 
                     DraftOrderStaffLine.CalcFields("Wearer ID", "Staff Name", "Contract ID", "Wardrobe ID", "Branch ID");
 

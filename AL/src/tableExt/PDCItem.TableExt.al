@@ -203,6 +203,12 @@ TableExtension 50005 PDCItem extends Item
             DecimalPlaces = 0 : 5;
             Editable = false;
         }
+        field(50042; "PDC Carbonfact Enabled"; Boolean)
+        {
+            Caption = 'Carbonfact Enabled';
+            ToolTip = 'Specifies whether this item is included in Carbonfact exports for CO2 calculation.';
+            DataClassification = CustomerContent;
+        }
     }
     keys
     {

@@ -30,7 +30,7 @@ pageextension 50076 PDCSalesPrices extends "Sales Prices"
             }
             field("PDC Direct Unit Cost"; Rec."PDC Direct Unit Cost")
             {
-                ToolTip = 'Direct Unit Cost';
+                ToolTip = 'Direct Unit Cost (LCY)';
                 ApplicationArea = All;
             }
             field("PDC Direct Unit Cost Starting Date"; Rec."PDC Direct Unit CostStart.Date")
@@ -40,12 +40,12 @@ pageextension 50076 PDCSalesPrices extends "Sales Prices"
             }
             field(PDCGross; Rec."PDC Gross")
             {
-                ToolTip = 'Gross';
+                ToolTip = 'Gross (LCY)';
                 ApplicationArea = All;
             }
             field(PDCMargin; Rec.PDCMargin)
             {
-                ToolTip = 'Margin';
+                ToolTip = 'Margin (%)';
                 ApplicationArea = All;
             }
             field("PDC Item Blocked"; Rec."PDC Item Blocked")

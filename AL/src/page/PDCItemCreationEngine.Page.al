@@ -172,6 +172,21 @@ page 50045 "PDC Item Creation Engine"
                     ApplicationArea = All;
                     Visible = CurrBatchType = CurrBatchType::Production;
                 }
+                field(NetWeight; Rec."Net Weight")
+                {
+                    ToolTip = 'Specifies the net weight in kilograms of the item to be created.';
+                    ApplicationArea = All;
+                }
+                field(GTIN; Rec.GTIN)
+                {
+                    ToolTip = 'Specifies the Global Trade Item Number (GTIN) for the item to be created.';
+                    ApplicationArea = All;
+                }
+                field(TariffNo; Rec."Tariff No.")
+                {
+                    ToolTip = 'Specifies the tariff number for the item to be created.';
+                    ApplicationArea = All;
+                }
                 field(Include; Rec.Include)
                 {
                     ToolTip = 'Include';
@@ -228,6 +243,27 @@ page 50045 "PDC Item Creation Engine"
                                     SuggestProdItem.Run();
                                 end;
                         end;
+                    end;
+                }
+                action(ManageAttributes)
+                {
+                    ApplicationArea = All;
+                    Caption = 'Manage Attributes';
+                    ToolTip = 'Edit item attributes that will be applied when items are created.';
+                    Image = Category;
+                    Promoted = true;
+                    PromotedCategory = Process;
+                    PromotedOnly = true;
+                    Scope = Repeater;
+
+                    trigger OnAction()
+                    var
+                        TempItemAttrValueSelection: Record "Item Attribute Value Selection" temporary;
+                    begin
+                        Rec.TestField("Item No.");
+                        PopulateAttrBuffer(TempItemAttrValueSelection, CurrBatchName, Rec."Item No.");
+                        if Page.RunModal(Page::"PDC Item Creation Attributes", TempItemAttrValueSelection) in [Action::OK, Action::LookupOK] then
+                            SaveAttrBuffer(TempItemAttrValueSelection, CurrBatchName, Rec."Item No.");
                     end;
                 }
                 action(InsertItems)
@@ -312,6 +348,67 @@ page 50045 "PDC Item Creation Engine"
         Rec.FilterGroup := 0;
         if Rec.Find('-') then;
         CurrPage.Update(false);
+    end;
+
+    local procedure PopulateAttrBuffer(var TempBuf: Record "Item Attribute Value Selection" temporary;
+        BatchName2: Code[10]; ItemNo: Code[20])
+    var
+        ItemAttribute: Record "Item Attribute";
+        CreationAttr: Record "PDC Item Creation Attribute";
+        ItemAttrValue: Record "Item Attribute Value";
+    begin
+        CreationAttr.SetRange("Journal Batch Name", BatchName2);
+        CreationAttr.SetRange("Item No.", ItemNo);
+        if CreationAttr.FindSet() then
+            repeat
+                if ItemAttribute.Get(CreationAttr."Item Attribute ID") then begin
+                    TempBuf.Init();
+                    TempBuf."Attribute ID" := ItemAttribute.ID;
+                    TempBuf."Attribute Name" := ItemAttribute.Name;
+                    TempBuf."Attribute Type" := ItemAttribute.Type;
+                    if ItemAttrValue.Get(CreationAttr."Item Attribute ID", CreationAttr."Item Attribute Value ID") then
+                        TempBuf.Value := ItemAttrValue.Value;
+                    TempBuf.Insert();
+                end;
+            until CreationAttr.Next() = 0;
+    end;
+
+    local procedure SaveAttrBuffer(var TempBuf: Record "Item Attribute Value Selection" temporary;
+        BatchName2: Code[10]; CurrItemNo: Code[20])
+    var
+        CreationAttr: Record "PDC Item Creation Attribute";
+        ItemAttrValue: Record "Item Attribute Value";
+    begin
+        CreationAttr.SetRange("Journal Batch Name", BatchName2);
+        CreationAttr.SetRange("Item No.", CurrItemNo);
+        CreationAttr.DeleteAll();
+
+        TempBuf.Reset();
+        if TempBuf.FindSet() then
+            repeat
+                if TempBuf.Value <> '' then begin
+                    FindOrCreateAttrValue(TempBuf."Attribute ID", TempBuf.Value, ItemAttrValue);
+                    CreationAttr.Init();
+                    CreationAttr."Journal Batch Name" := BatchName2;
+                    CreationAttr."Item No." := CurrItemNo;
+                    CreationAttr."Item Attribute ID" := TempBuf."Attribute ID";
+                    CreationAttr."Item Attribute Value ID" := ItemAttrValue.ID;
+                    CreationAttr.Insert();
+                end;
+            until TempBuf.Next() = 0;
+    end;
+
+    local procedure FindOrCreateAttrValue(AttrID: Integer; ValueText: Text; var ItemAttrValue: Record "Item Attribute Value")
+    begin
+        ItemAttrValue.Reset();
+        ItemAttrValue.SetRange("Attribute ID", AttrID);
+        ItemAttrValue.SetRange(Value, ValueText);
+        if not ItemAttrValue.FindFirst() then begin
+            ItemAttrValue.Init();
+            ItemAttrValue."Attribute ID" := AttrID;
+            ItemAttrValue.Value := CopyStr(ValueText, 1, MaxStrLen(ItemAttrValue.Value));
+            ItemAttrValue.Insert(true);
+        end;
     end;
 }
 

@@ -61,7 +61,12 @@ Report 50013 "PDC Implement Items"
                     Item."PDC Return Period" := "Return Period";
                     item."Lead Time Calculation" := "Lead Time Calculation";
                     item."PDC Contract Item" := "Contract Item";
+                    Item."Net Weight" := "Net Weight";
+                    Item.GTIN := GTIN;
+                    Item."Tariff No." := "Tariff No.";
                     Item.Modify(true);
+
+                    ApplyItemAttributes("Journal Batch Name", "Item No.");
 
                     if "Routing No." <> '' then begin
                         Item."Routing No." := "Routing No.";
@@ -162,7 +167,7 @@ Report 50013 "PDC Implement Items"
             trigger OnPostDataItem()
             begin
                 Commit();
-                DeleteAll();
+                DeleteAll(true); //clean up creation attributes for the item as they are no longer needed
                 Commit();
 
                 if NeedCreateSKU then
@@ -341,6 +346,25 @@ Report 50013 "PDC Implement Items"
             StockkeepingUnit."Use Cross-Docking" := Item2."Use Cross-Docking";
             StockkeepingUnit.Insert(true);
         end;
+    end;
+
+    local procedure ApplyItemAttributes(BatchName: Code[10]; ItemNo: Code[20])
+    var
+        CreationAttr: Record "PDC Item Creation Attribute";
+        AttrValueMapping: Record "Item Attribute Value Mapping";
+    begin
+        CreationAttr.SetRange("Journal Batch Name", BatchName);
+        CreationAttr.SetRange("Item No.", ItemNo);
+        if CreationAttr.FindSet() then
+            repeat
+                AttrValueMapping.Init();
+                AttrValueMapping."Table ID" := Database::Item;
+                AttrValueMapping."No." := ItemNo;
+                AttrValueMapping."Item Attribute ID" := CreationAttr."Item Attribute ID";
+                AttrValueMapping."Item Attribute Value ID" := CreationAttr."Item Attribute Value ID";
+                if not AttrValueMapping.Insert() then
+                    AttrValueMapping.Modify();
+            until CreationAttr.Next() = 0;
     end;
 
     local procedure CreateBinContent(pItemNo: Code[20]; pLocationCode: Code[10]; pBinCode: Code[20])

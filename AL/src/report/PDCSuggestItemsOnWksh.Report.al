@@ -65,6 +65,9 @@ Report 50012 "PDC Suggest Items On Wksh."
                             Worksheet."Config. Template Code" := ConfigTemplateCode;
                             Worksheet."Return Period" := ReturnPeriod;
                             Worksheet."Routing No." := RoutingNo;
+                            Worksheet."Net Weight" := NetWeight;
+                            Worksheet.GTIN := GTIN;
+                            Worksheet."Tariff No." := TariffNo;
                             if ConsGarmetProdCode <> '' then begin
                                 Item.Reset();
                                 Item.SetRange("PDC Product Code", ConsGarmetProdCode);
@@ -250,6 +253,27 @@ Report 50012 "PDC Suggest Items On Wksh."
                         ToolTip = 'Config. Template Code';
                         TableRelation = "Config. Template Header".Code where("Table ID" = const(27));
                     }
+                    field(NetWeightFld; NetWeight)
+                    {
+                        ApplicationArea = All;
+                        Caption = 'Net Weight';
+                        ToolTip = 'Specifies the net weight in kilograms for the items to be created.';
+                        DecimalPlaces = 0 : 5;
+                        MinValue = 0;
+                    }
+                    field(GTINFld; GTIN)
+                    {
+                        ApplicationArea = All;
+                        Caption = 'GTIN';
+                        ToolTip = 'Specifies the Global Trade Item Number for the items to be created.';
+                    }
+                    field(TariffNoFld; TariffNo)
+                    {
+                        ApplicationArea = All;
+                        Caption = 'Tariff No.';
+                        ToolTip = 'Specifies the tariff number for the items to be created.';
+                        TableRelation = "Tariff Number";
+                    }
                 }
             }
         }
@@ -316,6 +340,9 @@ Report 50012 "PDC Suggest Items On Wksh."
         RoutingNo: Code[20];
         ConsGarmetProdCode: Code[30];
         ContractItem: Boolean;
+        NetWeight: Decimal;
+        GTIN: Code[14];
+        TariffNo: Code[20];
         ProgressTxt: label 'Processing items  #1##########', Comment = '%1=progress';
 
     procedure Initialize(ToBatchName2: Code[10])
