@@ -1,0 +1,48 @@
+{
+	"folders": [
+		{
+			"name": ".alpackages",
+			"path": ".alpackages"
+		},
+		{
+			"name": "AL",
+			"path": "AL"
+		},
+		{
+			"name": "EDocument",
+			"path": "EDocument"
+		},
+		{
+			"name": "Shopify",
+			"path": "Shopify"
+		},
+		{
+			"path": "Fix"
+		},
+		{
+			"path": ".claude"
+		},
+		{
+			"path": "ai"
+		}
+	],
+	"settings": {
+		"al.packageCachePath": "../.alpackages",
+		"al.codeAnalyzers": [
+			"${CodeCop}",
+			"${UICop}",
+			"${PerTenantExtensionCop}"
+		],
+		"al.enableCodeAnalysis": true,
+		"CRS.FileNamePattern": "<ObjectNameShort>.<ObjectTypeShortPascalCase>.al",
+		"CRS.FileNamePatternExtensions": "<ObjectNameShort>.<ObjectTypeShortPascalCase>.al",
+		"CRS.FileNamePatternPageCustomizations": "<ObjectNameShort>.<ObjectTypeShortPascalCase>.al",
+		"CRS.OnSaveAlFileAction": "Rename",
+		"CRS.RenameWithGit": true,		
+		"al.assemblyProbingPaths": [
+			"./.netpackages",
+			"C:/Program Files/Assemblies",
+			"c:/Windows/assembly/"
+		]
+	}
+}

@@ -1,0 +1,33 @@
+# Build output
+*.app
+*.g.xlf
+*.zip
+*.flf
+TestResults.xml
+TestResults
+BuildOutput.txt
+.output
+
+# AL caches and packages
+.alpackages/
+.alcache/
+.altemplates/
+cache_*
+extraction-manifest.json
+rad.json
+
+# VS Code (root level only — AL/.vscode is committed)
+/.vscode/
+launch.json
+settings.json
+
+# Local dev environments
+.localDevEnv/
+
+# Claude / AI
+.claude/
+ai/
+
+# Scripts
+*.ps1
+AL/build.ps1

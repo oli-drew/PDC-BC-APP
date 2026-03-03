@@ -1,0 +1,38 @@
+{
+  "id": "d687a45c-ffd7-4ace-95ce-76aad104c2d1",
+  "name": "PDC Fix",
+  "publisher": "JEMEL SIA",
+  "version": "25.0.0.2",
+  "brief": "PDC",
+  "description": "PDC",
+  "privacyStatement": "",  
+  "EULA": "",
+  "help": "",
+  "url": "",
+  "logo": "",
+  "dependencies": [
+    {
+      "id": "948f1a56-572b-4a9e-a7aa-cc6b2de5bfe9",
+      "name": "PDC",
+      "publisher": "JEMEL SIA",
+      "version": "25.0.0.0"
+    }
+  ],
+  "screenshots": [],
+  "platform": "25.0.0.0",
+  "application": "25.0.0.0",
+  "idRanges": [
+    {
+      "from": 60000,
+      "to": 60099
+    }
+  ],
+  "contextSensitiveHelpUrl": "https://peterdrew.com/help/",
+  "resourceExposurePolicy": {
+    "allowDebugging": true,
+    "allowDownloadingSource": true,
+    "includeSourceInSymbolFile": false
+  },
+  "target": "Cloud",
+  "runtime": "14.0"
+}

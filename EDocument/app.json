@@ -1,0 +1,44 @@
+{
+  "id": "8c86e7a8-e786-46de-852d-b9091e9207d8",
+  "name": "PDC EDocument",
+  "publisher": "JEMEL SIA",
+  "version": "26.0.0.56",
+  "brief": "PDC",
+  "description": "PDC",
+  "privacyStatement": "",  
+  "EULA": "",
+  "help": "",
+  "url": "",
+  "logo": "",
+  "dependencies": [
+    {
+      "id": "e1d97edc-c239-46b4-8d84-6368bdf67c8b",
+      "name": "E-Document Core",
+      "publisher": "Microsoft",
+      "version": "26.0.0.0"
+    },
+    {
+      "id": "948f1a56-572b-4a9e-a7aa-cc6b2de5bfe9",
+      "name": "PDC",
+      "publisher": "JEMEL SIA",
+      "version": "26.0.0.0"
+    }
+  ],
+  "screenshots": [],
+  "platform": "26.0.0.0",
+  "application": "26.0.0.0",
+  "idRanges": [
+    {
+      "from": 50300,
+      "to": 50399
+    }
+  ],
+  "contextSensitiveHelpUrl": "https://peterdrew.com/help/",
+  "resourceExposurePolicy": {
+    "allowDebugging": true,
+    "allowDownloadingSource": true,
+    "includeSourceInSymbolFile": false
+  },
+  "target": "Cloud",
+  "runtime": "15.2"
+}

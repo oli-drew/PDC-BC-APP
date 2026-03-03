@@ -1,0 +1,44 @@
+{
+  "id": "4f171d7a-bf67-4814-b060-259904e5f6c5",
+  "name": "PDC Shopify",
+  "publisher": "JEMEL SIA",
+  "version": "27.0.0.61",
+  "brief": "PDC Shopify",
+  "description": "PDC Shopify",
+  "privacyStatement": "",  
+  "EULA": "",
+  "help": "",
+  "url": "",
+  "logo": "",
+  "dependencies": [
+    {
+      "id": "ec255f57-31d0-4ca2-b751-f2fa7c745abb",
+      "publisher": "Microsoft",
+      "name": "Shopify Connector",
+      "version": "27.0.0.0"
+    },
+    {
+      "id": "948f1a56-572b-4a9e-a7aa-cc6b2de5bfe9",
+      "name": "PDC",
+      "publisher": "JEMEL SIA",
+      "version": "26.0.0.0"
+    }
+  ],
+  "screenshots": [],
+  "platform": "27.0.0.0",
+  "application": "27.0.0.0",
+  "idRanges": [
+    {
+      "from": 50400,
+      "to": 50499
+    }
+  ],
+  "contextSensitiveHelpUrl": "https://peterdrew.com/help/",
+  "resourceExposurePolicy": {
+    "allowDebugging": true,
+    "allowDownloadingSource": true,
+    "includeSourceInSymbolFile": false
+  },
+  "target": "Cloud",
+  "runtime": "16.0"
+}

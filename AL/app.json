@@ -1,0 +1,45 @@
+{
+  "id": "948f1a56-572b-4a9e-a7aa-cc6b2de5bfe9",
+  "name": "PDC",
+  "publisher": "JEMEL SIA",
+  "version": "26.0.0.62",
+  "brief": "PDC",
+  "description": "PDC",
+  "privacyStatement": "",  
+  "EULA": "",
+  "help": "",
+  "url": "",
+  "logo": "",
+  "dependencies": [
+    {
+      "id": "ba1776ba-1198-4b4c-a61e-c4612f1880d5",
+      "name": "IWorks Common",
+      "publisher": "Insight Works",
+      "version": "2.18.0.0"
+    },
+    {
+      "id": "b0c8bcc7-2924-4cd2-8562-4e71ebd07323",
+      "name": "Insight Works PrintNode Connector",
+      "publisher": "Insight Works",
+      "version": "2.3.0.0"
+    }
+  ],
+  "screenshots": [],
+  "platform": "26.0.0.0",
+  "application": "26.0.0.0",
+  "idRanges": [
+    {
+      "from": 50000,
+      "to": 50299
+    }
+  ],
+  "contextSensitiveHelpUrl": "https://peterdrew.com/help/",
+  "resourceExposurePolicy": {
+    "allowDebugging": true,
+    "allowDownloadingSource": true,
+    "includeSourceInSymbolFile": false
+  },
+  "target": "Cloud",
+  "runtime": "15.2",
+  "resourceFolders": ["Resources"]
+}
