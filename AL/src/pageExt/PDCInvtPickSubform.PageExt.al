@@ -7,6 +7,42 @@ pageextension 50066 PDCInvtPickSubform extends "Invt. Pick Subform"
     {
         addafter("Assemble to Order")
         {
+            field(PDCSlotNo; Rec."PDC Slot No.")
+            {
+                ApplicationArea = All;
+                Tooltip = 'Slot No.';
+                Editable = false;
+            }
+            field(PDCColour; Rec."PDC Colour")
+            {
+                ApplicationArea = All;
+                Tooltip = 'Colour';
+            }
+            field(PDCSize; Rec."PDC Size")
+            {
+                ApplicationArea = All;
+                Tooltip = 'Size';
+            }
+            field(PDCFit; Rec."PDC Fit")
+            {
+                ApplicationArea = All;
+                Tooltip = 'Fit';
+            }
+            field(PDCInventory; Rec."PDC Inventory")
+            {
+                ApplicationArea = All;
+                Tooltip = 'Inventory';
+            }
+            field(PDCVendorNo; Rec."PDC Vendor No.")
+            {
+                ApplicationArea = All;
+                Tooltip = 'Vendor No.';
+            }
+            field(PDCVendorSKU; Rec."PDC Vendor SKU")
+            {
+                ApplicationArea = All;
+                Tooltip = 'Vendor SKU';
+            }
             field(PDCWearerID; Rec."PDC Wearer ID")
             {
                 ApplicationArea = All;
@@ -42,6 +78,14 @@ pageextension 50066 PDCInvtPickSubform extends "Invt. Pick Subform"
                 ApplicationArea = All;
                 Tooltip = 'Sales Order Line Amount';
             }
+        }
+
+        modify("Qty. to Handle")
+        {
+            trigger OnAfterValidate()
+            begin
+                CurrPage.Update(true);
+            end;
         }
     }
     actions
