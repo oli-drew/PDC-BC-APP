@@ -26,6 +26,19 @@ pageextension 50015 PDCPurchaseOrder extends "Purchase Order"
                 ApplicationArea = All;
             }
         }
+        addfirst(FactBoxes)
+        {
+            part(PDCReservationEntries; "PDC Purch Res. Entry FactBox")
+            {
+                ApplicationArea = All;
+                Caption = 'Reservation Entries';
+                Provider = PurchLines;
+                SubPageLink = "Source Type" = const(39),
+                              "Source Subtype" = field("Document Type"),
+                              "Source ID" = field("Document No."),
+                              "Source Ref. No." = field("Line No.");
+            }
+        }
     }
     actions
     {
